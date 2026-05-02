@@ -1,0 +1,41 @@
+You are performing a code quality review for a hackathon submission.
+
+Project: {project_name}
+Git Commit SHA: {commit_sha}
+
+Source Files:
+---
+{code_files}
+---
+
+Score this code across exactly these five dimensions (0–10 each):
+
+1. cleanliness     – Naming conventions, formatting, style consistency, no dead/commented-out code
+2. modularity      – Separation of concerns, DRY principle, appropriate function/class size, no god objects
+3. security        – Check for: hardcoded API keys or secrets, SQL/command injection vectors, missing input
+                     validation, unauthenticated sensitive routes, insecure defaults, OWASP Top 10 patterns
+4. robustness      – Error handling coverage, null/empty input handling, boundary conditions, exception propagation
+5. best_practices  – Language-specific idioms, consistent design patterns, no obvious anti-patterns
+
+For the security dimension, if you find any concrete issue (hardcoded secret, injection vector, missing auth),
+set that score below 6 and name the specific file and the exact issue in the reasoning.
+
+REASONING REQUIREMENTS — your reasoning for each dimension must:
+- Name at least two specific files, functions, or classes by their exact names
+- Quote or describe at least one concrete code pattern, variable name, or function signature you observed
+- If the score is 7 or below: give at least two specific examples of what is wrong and why it hurts the score
+- If the score is 8 or above: give at least two specific examples of what is done well and why it earns the high score
+- Never write vague statements like "the code is clean" or "good structure" without citing evidence
+
+Respond with ONLY valid JSON — no markdown, no explanation outside the JSON:
+{{
+  "sub_scores": {{
+    "cleanliness":    {{"score": <0-10>, "reasoning": "<evidence-based explanation naming specific files, functions, and patterns — minimum 3 sentences>"}},
+    "modularity":     {{"score": <0-10>, "reasoning": "<evidence-based explanation naming specific files, functions, and patterns — minimum 3 sentences>"}},
+    "security":       {{"score": <0-10>, "reasoning": "<evidence-based explanation — if issues found, quote the exact file, the type of vulnerability, and the impact; if clean, cite the specific patterns that confirm it — minimum 3 sentences>"}},
+    "robustness":     {{"score": <0-10>, "reasoning": "<evidence-based explanation naming specific files, functions, and patterns — minimum 3 sentences>"}},
+    "best_practices": {{"score": <0-10>, "reasoning": "<evidence-based explanation naming specific files, functions, and patterns — minimum 3 sentences>"}}
+  }},
+  "reasoning": "<overall summary of 5-8 sentences — cover the top 2 strengths and top 2 weaknesses with specific file/function examples for each; end with one sentence on the most critical thing to fix>",
+  "confidence": "<low|medium|high>"
+}}

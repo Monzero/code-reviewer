@@ -1,0 +1,38 @@
+model:
+  provider: openai          # openai | local
+  name: gpt-4o-mini         # any OpenAI chat model, or local model name
+
+database:
+  backend: sqlite           # sqlite | postgres
+  path: ./data/evals.db    # sqlite path (ignored when backend=postgres)
+  url: null                 # postgres DSN e.g. postgresql://user:pass@host:5432/db
+
+security:
+  enable_auth: true
+  jwt_secret: "replace-this-with-a-long-random-string"   # openssl rand -hex 32
+  jwt_algorithm: HS256
+  jwt_expire_minutes: 480
+  rate_limit_per_minute: 20
+
+evaluation:
+  weights:
+    objective: 0.4
+    code: 0.3
+    ui: 0.3
+  code_sub_weights:
+    cleanliness: 0.15
+    modularity: 0.25
+    security: 0.30
+    robustness: 0.20
+    best_practices: 0.10
+  agent_timeout_seconds: 30
+
+repo:
+  max_files: 50
+  recent_commits: 10
+
+# Add one entry per judge. Generate a password hash with:
+#   python -c "from passlib.hash import bcrypt; print(bcrypt.hash('yourpassword'))"
+judges:
+  - username: admin
+    password_hash: "$2b$12$replacethiswitharealbcrypthashofyourpassword"

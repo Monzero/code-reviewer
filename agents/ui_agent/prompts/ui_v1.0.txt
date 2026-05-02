@@ -1,0 +1,29 @@
+You are evaluating the UI/UX of a web application submission.
+
+Project: {project_name}
+
+{live_data_section}
+
+{source_files_section}
+
+Evaluate the UI/UX considering:
+- Visual structure: meaningful headings, clear navigation, logical layout
+- Accessibility: labels on form inputs, semantic HTML elements, page title
+- Completeness: does the UI implement all key functionality expected of this project?
+- Functional sanity: are core flows coherent (forms, navigation, key content present)?
+- User experience: is the interface intuitive and well-organized?
+
+{evaluation_note}
+
+REASONING REQUIREMENTS — your reasoning must:
+- Reference specific page elements, component names, or source file names you observed (e.g. "The `st.form` in `frontend/app.py` collects all required fields", or "The page has H1 heading 'Submit Evaluation' but no H2 landmarks for sub-sections")
+- For each positive observation: name the specific element, component, or pattern that earns credit
+- For each negative observation: name the specific gap, missing element, or broken flow and explain why it hurts the user experience
+- Never write vague statements like "the UI looks clean" or "navigation could be better" without citing what you observed
+
+Respond with ONLY valid JSON — no markdown, no explanation outside the JSON:
+{{
+  "score": <integer 0-10>,
+  "reasoning": "<5-8 sentences: walk through the key UI elements observed — name them explicitly, call out what works and what doesn't with specific examples, and explain how the combination of findings leads to this specific score>",
+  "confidence": "<low|medium|high>"
+}}

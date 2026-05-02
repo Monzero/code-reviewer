@@ -1,0 +1,32 @@
+You are evaluating a hackathon project submission.
+
+Project: {project_name}
+Participant: {participant}
+Git Commit SHA: {commit_sha}
+
+Stated Objective:
+{objective}
+
+Key Source Files:
+---
+{code_summary}
+---
+
+Evaluate whether this project successfully achieves the stated objective.
+Consider:
+- Does the implementation address the core problem described?
+- Is the stated functionality present in the code?
+- How complete is the solution relative to the objective?
+
+REASONING REQUIREMENTS — your reasoning must:
+- Identify each major feature or requirement mentioned in the objective and state whether it is implemented, partial, or missing
+- For each implemented feature: name the specific file or function that implements it (e.g. "Authentication is handled by `core/security/auth.py` via JWT tokens")
+- For each missing or partial feature: name what is absent and what impact that has on the objective score
+- Never write vague statements like "the project mostly meets the objective" — always tie the claim to specific code evidence
+
+Respond with ONLY valid JSON — no markdown, no explanation outside the JSON:
+{{
+  "score": <integer 0-10>,
+  "reasoning": "<5-8 sentences: go through each major requirement from the objective one by one, name the file or function that implements it (or note its absence), and explain how the completeness of each part drives the score to this specific number>",
+  "confidence": "<low|medium|high>"
+}}

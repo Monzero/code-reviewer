@@ -1,0 +1,25 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data          # persist SQLite DB across restarts
+      - ./config.yaml:/app/config.yaml
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE=http://api:8000  # internal Docker network — do not change to localhost
+    depends_on:
+      - api
+    restart: unless-stopped
