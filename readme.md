@@ -23,7 +23,7 @@ An open-source, multi-agent system for evaluating hackathon and coding submissio
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/your-org/code-reviewer.git
+git clone https://github.com/Monzero/code-reviewer.git
 cd code-reviewer
 
 # 2. Create your config
@@ -54,7 +54,7 @@ Evaluation records are persisted in `./data/evals.db` across restarts.
 
 ```bash
 # 1. Clone and install dependencies
-git clone https://github.com/your-org/code-reviewer.git
+git clone https://github.com/Monzero/code-reviewer.git
 cd code-reviewer
 python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
