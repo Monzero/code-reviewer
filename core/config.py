@@ -48,7 +48,7 @@ class CodeSubWeights(BaseModel):
 class EvaluationConfig(BaseModel):
     weights: EvaluationWeights = EvaluationWeights()
     code_sub_weights: CodeSubWeights = CodeSubWeights()
-    agent_timeout_seconds: int = 30
+    agent_timeout_seconds: int = 90
 
 
 class RepoConfig(BaseModel):

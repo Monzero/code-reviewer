@@ -66,30 +66,53 @@ class EvaluationService:
         code_agent = CodeAgent(self.llm, self.config.evaluation.code_sub_weights)
         ui_agent = UIAgent(self.llm)
 
-        async def run_with_timeout(coro, name: str):
-            try:
-                return await asyncio.wait_for(coro, timeout=timeout)
-            except asyncio.TimeoutError:
-                log.warning("agent_timeout", agent=name, timeout=timeout)
-                return AgentResultFailed(error=f"timeout after {timeout}s")
-            except Exception as exc:
-                log.error("agent_error", agent=name, error=str(exc))
-                return AgentResultFailed(error=str(exc))
+        async def run_with_timeout(coro_factory, name: str):
+            last_error = ""
+            for attempt in range(2):
+                try:
+                    result = await asyncio.wait_for(coro_factory(), timeout=timeout)
+                except asyncio.TimeoutError:
+                    last_error = f"timeout after {timeout}s"
+                    log.warning("agent_timeout", agent=name, timeout=timeout,
+                                attempt=attempt + 1)
+                    result = AgentResultFailed(error=last_error)
+                except Exception as exc:
+                    last_error = str(exc)
+                    log.error("agent_error", agent=name, error=last_error,
+                              attempt=attempt + 1)
+                    result = AgentResultFailed(error=last_error)
+
+                if result.status == "ok":
+                    return result
+
+                last_error = result.error
+                if attempt == 0:
+                    log.warning("agent_failed_retrying", agent=name, error=last_error)
+
+            # Both attempts failed — add a user-friendly hint
+            if "timeout" in last_error.lower():
+                friendly = (
+                    f"Timed out after {timeout}s on both attempts. "
+                    "The model may be under load — you can re-run the evaluation."
+                )
+            else:
+                friendly = f"{last_error} (failed on both attempts). You can re-run the evaluation."
+            return AgentResultFailed(error=friendly)
 
         objective_result, code_result, ui_result = await asyncio.gather(
             run_with_timeout(
-                objective_agent.run(
+                lambda: objective_agent.run(
                     request.project_name, request.participant,
                     request.objective, file_contents, commit_sha
                 ),
                 "objective",
             ),
             run_with_timeout(
-                code_agent.run(request.project_name, file_contents, commit_sha),
+                lambda: code_agent.run(request.project_name, file_contents, commit_sha),
                 "code",
             ),
             run_with_timeout(
-                ui_agent.run(request.project_name, request.ui_url, file_contents),
+                lambda: ui_agent.run(request.project_name, request.ui_url, file_contents),
                 "ui",
             ),
         )

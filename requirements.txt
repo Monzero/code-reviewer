@@ -9,6 +9,7 @@ passlib[bcrypt]==1.7.4
 bcrypt==3.2.2
 slowapi>=0.1.9
 streamlit>=1.35.0
+reportlab>=4.0.0
 pyyaml>=6.0.1
 requests>=2.31.0
 beautifulsoup4>=4.12.3

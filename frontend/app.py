@@ -3,6 +3,9 @@ import streamlit as st
 import requests as http
 
 import os
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from pdf_report import generate_pdf
 API_BASE = os.getenv("API_BASE", "http://localhost:8000")
 
 
@@ -129,6 +132,17 @@ if page == "Submit Evaluation":
                 st.info(report["summary"])
                 if data.get("agents"):
                     render_agent_analysis(data["agents"])
+                pdf_bytes = generate_pdf(
+                    evaluation_id=eval_id,
+                    report=report,
+                    agents=data.get("agents"),
+                )
+                st.download_button(
+                    label="Download PDF Report",
+                    data=pdf_bytes,
+                    file_name=f"evaluation_{eval_id}.pdf",
+                    mime="application/pdf",
+                )
                 st.caption(f"View full report → **View Report** tab using ID `{eval_id}`")
             else:
                 st.error(f"Error {resp.status_code}: {resp.text}")
@@ -191,6 +205,21 @@ elif page == "View Report":
             # Agent analysis (reasoning + sub-scores)
             if data.get("agents"):
                 render_agent_analysis(data["agents"])
+
+            # PDF download
+            pdf_bytes = generate_pdf(
+                evaluation_id=eval_id,
+                report=report,
+                agents=data.get("agents"),
+                data=data,
+                prov=prov,
+            )
+            st.download_button(
+                label="Download PDF Report",
+                data=pdf_bytes,
+                file_name=f"evaluation_{eval_id}.pdf",
+                mime="application/pdf",
+            )
 
             # Judge overrides
             st.subheader("Judge Overrides")
