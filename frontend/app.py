@@ -34,6 +34,41 @@ def render_agent_analysis(agents: dict) -> None:
                     })
                 st.table(rows)
 
+def render_code_commentary(agents: dict) -> None:
+    """Render the qualitative code commentary section."""
+    c = agents.get("commentary", {})
+    if not c or c.get("status") == "failed":
+        if c and c.get("status") == "failed":
+            st.warning(f"Code commentary unavailable: {c.get('error', 'unknown error')}")
+        return
+
+    st.subheader("Code Commentary")
+
+    st.markdown("**End-to-end flow**")
+    st.write(c.get("flow_description", ""))
+
+    st.markdown("**Architecture**")
+    st.write(c.get("architecture_notes", ""))
+
+    col_s, col_c = st.columns(2)
+    with col_s:
+        st.markdown("**Strengths**")
+        for s in c.get("strengths", []):
+            st.markdown(f"- {s}")
+    with col_c:
+        st.markdown("**Concerns**")
+        for concern in c.get("concerns", []):
+            st.markdown(f"- {concern}")
+
+    st.markdown("**File breakdown**")
+    for fi in c.get("file_insights", []):
+        with st.expander(fi["path"]):
+            st.markdown(f"**Role:** {fi['role']}")
+            st.markdown(f"**Highlights:** {fi['highlights']}")
+            if fi["concerns"].lower() != "none":
+                st.markdown(f"**Concerns:** {fi['concerns']}")
+
+
 def render_interview_guide(agents: dict) -> None:
     """Render ownership agent's key decisions and interview questions."""
     ownership = agents.get("ownership", {})
@@ -153,6 +188,7 @@ if page == "Submit Evaluation":
                     st.warning("Flags: " + ", ".join(f"`{f}`" for f in report["flags"]))
                 st.info(report["summary"])
                 if data.get("agents"):
+                    render_code_commentary(data["agents"])
                     render_agent_analysis(data["agents"])
                     render_interview_guide(data["agents"])
                 pdf_bytes = generate_pdf(
@@ -229,6 +265,7 @@ elif page == "View Report":
 
             # Agent analysis (reasoning + sub-scores)
             if data.get("agents"):
+                render_code_commentary(data["agents"])
                 render_agent_analysis(data["agents"])
                 render_interview_guide(data["agents"])
 

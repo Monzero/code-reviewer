@@ -232,6 +232,83 @@ def generate_pdf(
         story.append(_provenance_table(data, prov or {}, styles))
         story.append(Spacer(1, 4))
 
+    # ── Code Commentary ────────────────────────────────────────────────────────
+    commentary = (agents or {}).get("commentary", {})
+    if commentary and commentary.get("status") == "ok":
+        story.append(Paragraph("Code Commentary", styles["h2"]))
+
+        story.append(Paragraph("<b>End-to-end flow</b>", styles["body"]))
+        story.append(Paragraph(commentary.get("flow_description", ""), styles["body"]))
+
+        story.append(Paragraph("<b>Architecture</b>", styles["body"]))
+        story.append(Paragraph(commentary.get("architecture_notes", ""), styles["body"]))
+
+        strengths = commentary.get("strengths", [])
+        concerns_list = commentary.get("concerns", [])
+        if strengths or concerns_list:
+            sc_col_w = (W - 2 * MARGIN) / 2
+            sc_data = [
+                [Paragraph("<b>Strengths</b>", styles["small"]),
+                 Paragraph("<b>Concerns</b>", styles["small"])],
+                [
+                    Paragraph(
+                        "<br/>".join(f"• {s}" for s in strengths) or "—",
+                        styles["small"]),
+                    Paragraph(
+                        "<br/>".join(f"• {c}" for c in concerns_list) or "—",
+                        styles["small"]),
+                ],
+            ]
+            sc_table = Table(sc_data, colWidths=[sc_col_w, sc_col_w])
+            sc_table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), DARK_BLUE),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("BACKGROUND", (0, 1), (0, 1), colors.HexColor("#E8F5E9")),
+                ("BACKGROUND", (1, 1), (1, 1), colors.HexColor("#FFF3E0")),
+                ("GRID", (0, 0), (-1, -1), 0.3, MID_GREY),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("TOPPADDING", (0, 0), (-1, -1), 4),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ("LEFTPADDING", (0, 0), (-1, -1), 5),
+            ]))
+            story.append(sc_table)
+            story.append(Spacer(1, 6))
+
+        file_insights = commentary.get("file_insights", [])
+        if file_insights:
+            story.append(Paragraph("<b>File breakdown</b>", styles["body"]))
+            fi_header = [
+                Paragraph("<b>File</b>", styles["small"]),
+                Paragraph("<b>Role</b>", styles["small"]),
+                Paragraph("<b>Highlights</b>", styles["small"]),
+                Paragraph("<b>Concerns</b>", styles["small"]),
+            ]
+            fi_rows = [fi_header]
+            for fi in file_insights:
+                fi_rows.append([
+                    Paragraph(fi.get("path", ""), styles["mono"]),
+                    Paragraph(fi.get("role", ""), styles["small"]),
+                    Paragraph(fi.get("highlights", ""), styles["small"]),
+                    Paragraph(fi.get("concerns", "none"), styles["small"]),
+                ])
+            col_w = W - 2 * MARGIN
+            fi_table = Table(
+                fi_rows,
+                colWidths=[col_w * 0.22, col_w * 0.18, col_w * 0.32, col_w * 0.28],
+            )
+            fi_table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), DARK_BLUE),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [LIGHT_GREY, colors.white]),
+                ("GRID", (0, 0), (-1, -1), 0.3, MID_GREY),
+                ("TOPPADDING", (0, 0), (-1, -1), 3),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                ("LEFTPADDING", (0, 0), (-1, -1), 5),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ]))
+            story.append(fi_table)
+            story.append(Spacer(1, 4))
+
     # ── Agent Analysis ─────────────────────────────────────────────────────────
     if agents:
         story.append(Paragraph("Agent Analysis", styles["h2"]))

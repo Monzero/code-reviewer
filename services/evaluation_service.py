@@ -14,6 +14,7 @@ from agents.objective_agent.agent import ObjectiveAgent
 from agents.code_agent.agent import CodeAgent
 from agents.ui_agent.agent import UIAgent
 from agents.ownership_agent.agent import OwnershipAgent
+from agents.commentary_agent.agent import CommentaryAgent
 from agents.aggregator.agent import AggregatorAgent
 from services.repo_service import RepoService
 
@@ -67,6 +68,7 @@ class EvaluationService:
         code_agent = CodeAgent(self.llm, self.config.evaluation.code_sub_weights)
         ui_agent = UIAgent(self.llm)
         ownership_agent = OwnershipAgent(self.llm)
+        commentary_agent = CommentaryAgent(self.llm)
 
         async def run_with_timeout(coro_factory, name: str):
             last_error = ""
@@ -101,7 +103,7 @@ class EvaluationService:
                 friendly = f"{last_error} (failed on both attempts). You can re-run the evaluation."
             return AgentResultFailed(error=friendly)
 
-        objective_result, code_result, ui_result, ownership_result = await asyncio.gather(
+        objective_result, code_result, ui_result, ownership_result, commentary_result = await asyncio.gather(
             run_with_timeout(
                 lambda: objective_agent.run(
                     request.project_name, request.participant,
@@ -122,6 +124,12 @@ class EvaluationService:
                     request.project_name, request.objective, file_contents
                 ),
                 "ownership",
+            ),
+            run_with_timeout(
+                lambda: commentary_agent.run(
+                    request.project_name, request.objective, file_contents
+                ),
+                "commentary",
             ),
         )
 
@@ -151,6 +159,7 @@ class EvaluationService:
                 code=code_result,
                 ui=ui_result,
                 ownership=ownership_result,
+                commentary=commentary_result,
             ),
             aggregated=aggregated,
         )

@@ -69,11 +69,39 @@ OwnershipAgentResult = Annotated[
 ]
 
 
+class FileInsight(BaseModel):
+    path: str
+    role: str
+    highlights: str
+    concerns: str
+
+
+class CommentaryAgentResultOk(BaseModel):
+    status: Literal["ok"] = "ok"
+    flow_description: str
+    architecture_notes: str
+    file_insights: list[FileInsight]
+    strengths: list[str]
+    concerns: list[str]
+    llm: LLMMeta
+    prompt_version: str
+    tokens: TokenUsage
+    latency_ms: int
+    raw_llm_response: str
+
+
+CommentaryAgentResult = Annotated[
+    Union[CommentaryAgentResultOk, AgentResultFailed],
+    Field(discriminator="status"),
+]
+
+
 class AgentResults(BaseModel):
     objective: FlatAgentResult
     code: CodeAgentResult
     ui: FlatAgentResult
     ownership: OwnershipAgentResult | None = None
+    commentary: CommentaryAgentResult | None = None
 
 
 class JudgeOverride(BaseModel):
