@@ -35,7 +35,7 @@ def render_agent_analysis(agents: dict) -> None:
                 st.table(rows)
 
 def render_code_commentary(agents: dict) -> None:
-    """Render the qualitative code commentary section."""
+    """Render judge-facing code briefing."""
     c = agents.get("commentary", {})
     if not c or c.get("status") == "failed":
         if c and c.get("status") == "failed":
@@ -44,29 +44,21 @@ def render_code_commentary(agents: dict) -> None:
 
     st.subheader("Code Commentary")
 
-    st.markdown("**End-to-end flow**")
-    st.write(c.get("flow_description", ""))
+    st.markdown("**Project structure**")
+    st.write(c.get("structure_overview", ""))
 
-    st.markdown("**Architecture**")
-    st.write(c.get("architecture_notes", ""))
+    file_summaries = c.get("file_summaries", [])
+    if file_summaries:
+        st.markdown("**Files & classes**")
+        import pandas as pd
+        df = pd.DataFrame([
+            {"File": fs["path"], "Purpose": fs["purpose"], "Key elements": fs["key_elements"]}
+            for fs in file_summaries
+        ])
+        st.dataframe(df, use_container_width=True, hide_index=True)
 
-    col_s, col_c = st.columns(2)
-    with col_s:
-        st.markdown("**Strengths**")
-        for s in c.get("strengths", []):
-            st.markdown(f"- {s}")
-    with col_c:
-        st.markdown("**Concerns**")
-        for concern in c.get("concerns", []):
-            st.markdown(f"- {concern}")
-
-    st.markdown("**File breakdown**")
-    for fi in c.get("file_insights", []):
-        with st.expander(fi["path"]):
-            st.markdown(f"**Role:** {fi['role']}")
-            st.markdown(f"**Highlights:** {fi['highlights']}")
-            if fi["concerns"].lower() != "none":
-                st.markdown(f"**Concerns:** {fi['concerns']}")
+    st.markdown("**Execution flow**")
+    st.write(c.get("execution_flow", ""))
 
 
 def render_interview_guide(agents: dict) -> None:

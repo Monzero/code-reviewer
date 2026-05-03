@@ -1,4 +1,6 @@
-You are a senior engineer who has just read through a hackathon submission end-to-end. Produce a thorough qualitative walkthrough of the codebase — the kind of commentary you would give a colleague who needs to understand this project quickly.
+You are briefing a panel of judges on a hackathon submission. The judges are technical but have not seen this codebase before. Your job is to help them understand what the project is, how it is organised, and how it works — so they can have an informed conversation with the participant.
+
+Write as a human would explain it to another human. Use plain language. No bullet-pointed criticism, no scores, no "good" or "bad" — just clear description.
 
 Project: {project_name}
 Stated Objective: {objective}
@@ -8,42 +10,29 @@ Source Files:
 {code_files}
 ---
 
-Cover all four of the following areas. Be specific: reference actual function names, class names, and file paths. Avoid generic praise or criticism — say exactly what you observed and why it matters.
+Produce the following three sections:
 
-1. FLOW
-   Trace the path from user input to final output. What are the stages? How does data move between them? What triggers what?
+1. STRUCTURE OVERVIEW
+   Look at the folder layout and top-level modules. Describe in plain English how the project is organised. For example: "The project is split into three main areas — the backend API lives in api/, the AI agents are each in their own subfolder under agents/, and the judge-facing UI is a single Streamlit file in frontend/. Configuration is centralised in config.yaml." Cover every meaningful folder or module. A judge should be able to picture the project tree from reading this.
 
-2. ARCHITECTURE
-   What structural pattern was chosen (layered, event-driven, agent-based, etc.)? What are the key abstractions? Are the boundaries between components clear? Are the decisions appropriate for the problem size and complexity?
+2. FILE AND CLASS SUMMARY
+   For every significant file (skip empty __init__.py files), provide:
+   - path: the file path
+   - purpose: one sentence describing what this file is responsible for
+   - key_elements: the important classes, functions, or constants defined here — name them and say in one phrase what each one does. Example: "EvaluationService (orchestrates agent execution), run_with_timeout (wraps each agent call with retry logic)". If the file is config-only or has no named elements worth calling out, write "none".
 
-3. FILE INSIGHTS
-   For every significant file (skip pure __init__.py with no logic), provide:
-   - role: one sentence on what this file does in the system
-   - highlights: what is done well — name specific functions, classes, or patterns and explain why they work
-   - concerns: what is weak, missing, or risky — specific and actionable. Use "none" only if genuinely no concerns.
-
-4. STRENGTHS AND CONCERNS
-   3–5 specific strengths across the whole codebase.
-   3–5 specific concerns across the whole codebase (bugs, gaps, design problems, missing pieces).
+3. EXECUTION FLOW
+   Walk through what happens when a judge submits a project for evaluation — from the moment they click the button to the moment the report appears on screen. Name the actual functions and files involved at each step. Write it as a flowing paragraph or two, not a bullet list. It should read like a story: "When the judge clicks Submit, the Streamlit frontend sends a POST request to /evaluate in api/routes/evaluate.py. This calls EvaluationService.evaluate(), which first clones the repository using RepoService.clone_and_select()..." and so on through to the final response.
 
 Respond ONLY with valid JSON in this exact shape:
 {{
-  "flow_description": "<2–4 sentences tracing end-to-end data/control flow>",
-  "architecture_notes": "<2–4 sentences on structural decisions and their appropriateness>",
-  "file_insights": [
+  "structure_overview": "<plain-English description of folder/module organisation>",
+  "file_summaries": [
     {{
       "path": "<relative file path>",
-      "role": "<one sentence>",
-      "highlights": "<specific positive observations>",
-      "concerns": "<specific concerns or 'none'>"
+      "purpose": "<one sentence>",
+      "key_elements": "<named classes/functions and what they do, or 'none'>"
     }}
   ],
-  "strengths": [
-    "<specific strength 1>",
-    "<specific strength 2>"
-  ],
-  "concerns": [
-    "<specific concern 1>",
-    "<specific concern 2>"
-  ]
+  "execution_flow": "<narrative paragraph(s) tracing a full evaluation from button click to report>"
 }}

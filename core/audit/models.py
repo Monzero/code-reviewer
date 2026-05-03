@@ -69,20 +69,17 @@ OwnershipAgentResult = Annotated[
 ]
 
 
-class FileInsight(BaseModel):
+class FileSummary(BaseModel):
     path: str
-    role: str
-    highlights: str
-    concerns: str
+    purpose: str
+    key_elements: str
 
 
 class CommentaryAgentResultOk(BaseModel):
     status: Literal["ok"] = "ok"
-    flow_description: str
-    architecture_notes: str
-    file_insights: list[FileInsight]
-    strengths: list[str]
-    concerns: list[str]
+    structure_overview: str
+    file_summaries: list[FileSummary]
+    execution_flow: str
     llm: LLMMeta
     prompt_version: str
     tokens: TokenUsage

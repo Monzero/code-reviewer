@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from core.llm.base import LLMClient
 from core.audit.models import (
-    AgentResultFailed, CommentaryAgentResultOk, FileInsight, LLMMeta, TokenUsage
+    AgentResultFailed, CommentaryAgentResultOk, FileSummary, LLMMeta, TokenUsage
 )
 from core.observability.logger import get_logger
 
@@ -39,21 +39,18 @@ class CommentaryAgent:
                  tokens_output=llm_resp.tokens_output)
         try:
             parsed = json.loads(llm_resp.text)
-            file_insights = [
-                FileInsight(
-                    path=fi["path"],
-                    role=fi["role"],
-                    highlights=fi["highlights"],
-                    concerns=fi["concerns"],
+            file_summaries = [
+                FileSummary(
+                    path=fs["path"],
+                    purpose=fs["purpose"],
+                    key_elements=fs["key_elements"],
                 )
-                for fi in parsed.get("file_insights", [])
+                for fs in parsed.get("file_summaries", [])
             ]
             return CommentaryAgentResultOk(
-                flow_description=parsed["flow_description"],
-                architecture_notes=parsed["architecture_notes"],
-                file_insights=file_insights,
-                strengths=parsed.get("strengths", []),
-                concerns=parsed.get("concerns", []),
+                structure_overview=parsed["structure_overview"],
+                file_summaries=file_summaries,
+                execution_flow=parsed["execution_flow"],
                 llm=LLMMeta(
                     provider=self.llm.provider,
                     model=self.llm.model,
