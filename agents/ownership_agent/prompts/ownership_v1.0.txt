@@ -1,0 +1,58 @@
+You are evaluating whether a hackathon participant genuinely understands and owns the code they submitted — as opposed to having generated it wholesale with an LLM without deep comprehension.
+
+LLM-generated code is typically clean and well-structured, so surface code quality is NOT a useful signal here. Focus entirely on evidence of deliberate decision-making and understanding.
+
+Project: {project_name}
+Stated Objective: {objective}
+
+Source Files:
+---
+{code_files}
+---
+
+Your task: identify the 3–5 most significant technical decisions embedded in this codebase and assess whether there are signals that the author understands and owns those decisions.
+
+What counts as a meaningful decision:
+- Choice of framework, library, or language (and why that choice fits or doesn't fit this problem)
+- Architectural pattern (e.g. layered service, event-driven, agent-based, REST vs. websocket)
+- Data model design (schema choices, normalization, use of ORMs vs. raw queries)
+- LLM integration choices (model selection, prompt strategy, structured output, context management)
+- Security and auth approach
+- Any non-trivial algorithm or custom implementation where a library alternative existed
+
+Ownership signals to look for (presence raises score):
+- Comments or docs that explain WHY a decision was made, not just WHAT the code does
+- Custom implementations where a simpler off-the-shelf approach would have worked — suggests deliberate choice
+- Evidence that tradeoffs were considered (e.g. TODO noting a limitation, a flag for an alternative path)
+- Architecture that is specifically shaped to the problem domain rather than generic scaffolding
+- Consistent vocabulary and naming that reflects domain knowledge
+- Error handling or edge cases that only matter in this specific domain
+
+Red flags (lower the score):
+- Framework/library used in a way that ignores its intended patterns (suggests copy-paste without understanding)
+- Decision rationale missing entirely across the board
+- Generic boilerplate with problem-specific logic just slotted in
+- Inconsistent patterns that suggest stitching from multiple sources
+- Named concepts that don't match the stated objective or domain
+
+Score 0–10:
+- 8–10: Strong, consistent evidence of ownership. Author clearly made deliberate choices they can explain.
+- 5–7: Moderate signals. Some decisions show understanding, others are opaque.
+- 3–4: Mostly boilerplate or LLM-generated patterns. Few if any ownership signals.
+- 0–2: No evidence of ownership. Cookie-cutter implementation with no domain-specific decision-making visible.
+
+For each key decision, also write one sharp interview question the judge should ask the participant. Questions should be specific to THIS codebase — not generic ("why did you use Python?") but targeted ("your auth middleware skips rate-limiting for the /health route — was that intentional, and what are the implications?").
+
+Respond ONLY with valid JSON in this exact shape:
+{{
+  "score": <float 0–10>,
+  "reasoning": "<2–4 sentence explanation of the overall ownership score>",
+  "confidence": "<low|medium|high>",
+  "key_decisions": [
+    {{
+      "decision": "<the specific decision identified in the code>",
+      "ownership_signal": "<what you observed — positive signal, red flag, or neutral>",
+      "question": "<one sharp, specific interview question for the judge to ask>"
+    }}
+  ]
+}}

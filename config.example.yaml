@@ -16,16 +16,17 @@ security:
 
 evaluation:
   weights:
-    objective: 0.4
-    code: 0.3
-    ui: 0.3
+    objective: 0.30
+    code: 0.25
+    ui: 0.25
+    ownership: 0.20
   code_sub_weights:
     cleanliness: 0.15
     modularity: 0.25
     security: 0.30
     robustness: 0.20
     best_practices: 0.10
-  agent_timeout_seconds: 30
+  agent_timeout_seconds: 90
 
 repo:
   max_files: 50

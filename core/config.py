@@ -32,9 +32,10 @@ class SecurityConfig(BaseModel):
 
 
 class EvaluationWeights(BaseModel):
-    objective: float = 0.4
-    code: float = 0.3
-    ui: float = 0.3
+    objective: float = 0.30
+    code: float = 0.25
+    ui: float = 0.25
+    ownership: float = 0.20
 
 
 class CodeSubWeights(BaseModel):

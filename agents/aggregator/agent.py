@@ -1,7 +1,7 @@
 from __future__ import annotations
 from core.audit.models import (
     AgentResultFailed, AgentResultOk, AggregatedResult,
-    CodeAgentResultOk, FlatAgentResult, CodeAgentResult
+    CodeAgentResultOk, FlatAgentResult, CodeAgentResult, OwnershipAgentResult
 )
 from core.config import EvaluationWeights, CodeSubWeights
 
@@ -16,8 +16,11 @@ class AggregatorAgent:
         objective: FlatAgentResult,
         code: CodeAgentResult,
         ui: FlatAgentResult,
+        ownership: OwnershipAgentResult | None = None,
     ) -> AggregatedResult:
         named = {"objective": objective, "code": code, "ui": ui}
+        if ownership is not None:
+            named["ownership"] = ownership
         scores: dict[str, float | None] = {}
         flags: list[str] = []
 
@@ -58,7 +61,9 @@ class AggregatorAgent:
             )
 
         parts = []
-        for name in ("objective", "code", "ui"):
+        for name in ("objective", "code", "ui", "ownership"):
+            if name not in scores:
+                continue
             v = scores[name]
             parts.append(f"{name.title()}: {v}/10" if v is not None else f"{name.title()}: N/A (failed)")
         summary = " | ".join(parts)
@@ -70,6 +75,7 @@ class AggregatorAgent:
             objective_score=scores["objective"],
             code_score=scores["code"],
             ui_score=scores["ui"],
+            ownership_score=scores.get("ownership"),
             weights_used=self.weights,
             summary=summary,
             flags=sorted(set(flags)),

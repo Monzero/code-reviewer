@@ -60,9 +60,12 @@ def _styles():
 
 
 def _score_table(report: dict) -> Table:
-    """4-column score card."""
+    """Score card — 4 or 5 columns depending on whether ownership is present."""
     labels = ["Overall", "Objective", "Code", "UI"]
     keys = ["overall_score", "objective_score", "code_score", "ui_score"]
+    if report.get("ownership_score") is not None:
+        labels.append("Ownership")
+        keys.append("ownership_score")
     header = [Paragraph(f"<b>{l}</b>", ParagraphStyle(
         "sh", fontName="Helvetica-Bold", fontSize=9,
         alignment=TA_CENTER, textColor=colors.white)) for l in labels]
@@ -81,8 +84,9 @@ def _score_table(report: dict) -> Table:
             alignment=TA_CENTER, textColor=colors.white)))
         bg_colors.append(("BACKGROUND", (i, 1), (i, 1), bg))
 
-    col_w = (W - 2 * MARGIN) / 4
-    t = Table([header, values], colWidths=[col_w] * 4, rowHeights=[18, 32])
+    n_cols = len(labels)
+    col_w = (W - 2 * MARGIN) / n_cols
+    t = Table([header, values], colWidths=[col_w] * n_cols, rowHeights=[18, 32])
     style = [
         ("BACKGROUND", (0, 0), (-1, 0), DARK_BLUE),
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
@@ -255,6 +259,52 @@ def generate_pdf(
             if agent_name == "code" and result.get("sub_scores"):
                 story.append(Paragraph("Sub-dimension scores:", styles["small"]))
                 story.append(_sub_scores_table(result["sub_scores"], styles))
+            story.append(Spacer(1, 4))
+
+    # ── Interview Guide ────────────────────────────────────────────────────────
+    ownership = (agents or {}).get("ownership", {})
+    if ownership and ownership.get("status") == "ok":
+        key_decisions = ownership.get("key_decisions", [])
+        if key_decisions:
+            story.append(Paragraph("Interview Guide", styles["h2"]))
+            story.append(Paragraph(
+                f"<b>Ownership score:</b> {ownership.get('score')}/10 "
+                f"&nbsp;&nbsp; <b>Confidence:</b> {ownership.get('confidence', '—')}",
+                styles["body"]))
+            if ownership.get("reasoning"):
+                story.append(Paragraph(ownership["reasoning"], styles["body"]))
+            story.append(Spacer(1, 4))
+
+            guide_header = [
+                Paragraph("<b>#</b>", styles["small"]),
+                Paragraph("<b>Decision</b>", styles["small"]),
+                Paragraph("<b>Signal observed</b>", styles["small"]),
+                Paragraph("<b>Question to ask</b>", styles["small"]),
+            ]
+            guide_rows = [guide_header]
+            for i, kd in enumerate(key_decisions, 1):
+                guide_rows.append([
+                    Paragraph(str(i), styles["small"]),
+                    Paragraph(kd.get("decision", ""), styles["small"]),
+                    Paragraph(kd.get("ownership_signal", ""), styles["small"]),
+                    Paragraph(kd.get("question", ""), styles["small"]),
+                ])
+            col_w = W - 2 * MARGIN
+            guide_table = Table(
+                guide_rows,
+                colWidths=[col_w * 0.04, col_w * 0.22, col_w * 0.32, col_w * 0.42],
+            )
+            guide_table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), DARK_BLUE),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [LIGHT_GREY, colors.white]),
+                ("GRID", (0, 0), (-1, -1), 0.3, MID_GREY),
+                ("TOPPADDING", (0, 0), (-1, -1), 4),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ("LEFTPADDING", (0, 0), (-1, -1), 5),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ]))
+            story.append(guide_table)
             story.append(Spacer(1, 4))
 
     # ── Judge Overrides ────────────────────────────────────────────────────────

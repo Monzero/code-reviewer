@@ -13,6 +13,7 @@ from core.observability.logger import get_logger
 from agents.objective_agent.agent import ObjectiveAgent
 from agents.code_agent.agent import CodeAgent
 from agents.ui_agent.agent import UIAgent
+from agents.ownership_agent.agent import OwnershipAgent
 from agents.aggregator.agent import AggregatorAgent
 from services.repo_service import RepoService
 
@@ -65,6 +66,7 @@ class EvaluationService:
         objective_agent = ObjectiveAgent(self.llm)
         code_agent = CodeAgent(self.llm, self.config.evaluation.code_sub_weights)
         ui_agent = UIAgent(self.llm)
+        ownership_agent = OwnershipAgent(self.llm)
 
         async def run_with_timeout(coro_factory, name: str):
             last_error = ""
@@ -99,7 +101,7 @@ class EvaluationService:
                 friendly = f"{last_error} (failed on both attempts). You can re-run the evaluation."
             return AgentResultFailed(error=friendly)
 
-        objective_result, code_result, ui_result = await asyncio.gather(
+        objective_result, code_result, ui_result, ownership_result = await asyncio.gather(
             run_with_timeout(
                 lambda: objective_agent.run(
                     request.project_name, request.participant,
@@ -115,13 +117,21 @@ class EvaluationService:
                 lambda: ui_agent.run(request.project_name, request.ui_url, file_contents),
                 "ui",
             ),
+            run_with_timeout(
+                lambda: ownership_agent.run(
+                    request.project_name, request.objective, file_contents
+                ),
+                "ownership",
+            ),
         )
 
         aggregator = AggregatorAgent(
             self.config.evaluation.weights,
             self.config.evaluation.code_sub_weights,
         )
-        aggregated = aggregator.aggregate(objective_result, code_result, ui_result)
+        aggregated = aggregator.aggregate(
+            objective_result, code_result, ui_result, ownership_result
+        )
         aggregated.flags = sorted(set(aggregated.flags + extra_flags))
 
         record = EvaluationRecord(
@@ -140,6 +150,7 @@ class EvaluationService:
                 objective=objective_result,
                 code=code_result,
                 ui=ui_result,
+                ownership=ownership_result,
             ),
             aggregated=aggregated,
         )

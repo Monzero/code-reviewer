@@ -34,6 +34,26 @@ def render_agent_analysis(agents: dict) -> None:
                     })
                 st.table(rows)
 
+def render_interview_guide(agents: dict) -> None:
+    """Render ownership agent's key decisions and interview questions."""
+    ownership = agents.get("ownership", {})
+    if not ownership or ownership.get("status") == "failed":
+        return
+    key_decisions = ownership.get("key_decisions", [])
+    if not key_decisions:
+        return
+    st.subheader("Interview Guide")
+    st.caption(
+        f"Ownership score: **{ownership.get('score')}/10** "
+        f"(confidence: {ownership.get('confidence', '—')})  \n"
+        f"{ownership.get('reasoning', '')}"
+    )
+    for i, kd in enumerate(key_decisions, 1):
+        with st.expander(f"Q{i}: {kd['decision']}", expanded=True):
+            st.markdown(f"**Signal observed:** {kd['ownership_signal']}")
+            st.info(f"**Ask:** {kd['question']}")
+
+
 st.set_page_config(page_title="AI Project Evaluator", layout="wide")
 
 
@@ -121,17 +141,20 @@ if page == "Submit Evaluation":
                 st.success(f"Evaluation complete — ID: `{eval_id}`")
                 st.session_state.last_eval_id = eval_id
 
-                col1, col2, col3, col4 = st.columns(4)
+                col1, col2, col3, col4, col5 = st.columns(5)
                 col1.metric("Overall", f"{report['overall_score']}/10")
                 col2.metric("Objective", f"{report['objective_score']}/10")
                 col3.metric("Code", f"{report['code_score']}/10")
                 col4.metric("UI", f"{report['ui_score']}/10")
+                ownership_score = report.get("ownership_score")
+                col5.metric("Ownership", f"{ownership_score}/10" if ownership_score is not None else "—")
 
                 if report["flags"]:
                     st.warning("Flags: " + ", ".join(f"`{f}`" for f in report["flags"]))
                 st.info(report["summary"])
                 if data.get("agents"):
                     render_agent_analysis(data["agents"])
+                    render_interview_guide(data["agents"])
                 pdf_bytes = generate_pdf(
                     evaluation_id=eval_id,
                     report=report,
@@ -172,11 +195,13 @@ elif page == "View Report":
 
             # Scores
             st.subheader("Scores")
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3, col4, col5 = st.columns(5)
             col1.metric("Overall", f"{report['overall_score']}/10")
             col2.metric("Objective", f"{report['objective_score']}/10")
             col3.metric("Code", f"{report['code_score']}/10")
             col4.metric("UI", f"{report['ui_score']}/10")
+            ownership_score = report.get("ownership_score")
+            col5.metric("Ownership", f"{ownership_score}/10" if ownership_score is not None else "—")
 
             if report["flags"]:
                 st.warning("Flags: " + ", ".join(f"`{f}`" for f in report["flags"]))
@@ -205,6 +230,7 @@ elif page == "View Report":
             # Agent analysis (reasoning + sub-scores)
             if data.get("agents"):
                 render_agent_analysis(data["agents"])
+                render_interview_guide(data["agents"])
 
             # PDF download
             pdf_bytes = generate_pdf(

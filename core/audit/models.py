@@ -53,10 +53,27 @@ CodeAgentResult = Annotated[
 ]
 
 
+class KeyDecision(BaseModel):
+    decision: str
+    ownership_signal: str
+    question: str
+
+
+class OwnershipAgentResultOk(AgentResultOk):
+    key_decisions: list[KeyDecision]
+
+
+OwnershipAgentResult = Annotated[
+    Union[OwnershipAgentResultOk, AgentResultFailed],
+    Field(discriminator="status"),
+]
+
+
 class AgentResults(BaseModel):
     objective: FlatAgentResult
     code: CodeAgentResult
     ui: FlatAgentResult
+    ownership: OwnershipAgentResult | None = None
 
 
 class JudgeOverride(BaseModel):
@@ -75,6 +92,7 @@ class AggregatedResult(BaseModel):
     objective_score: float | None
     code_score: float | None
     ui_score: float | None
+    ownership_score: float | None = None
     weights_used: dict[str, float]
     summary: str
     flags: list[str]
